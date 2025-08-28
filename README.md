@@ -11,7 +11,6 @@ A modern, scalable, and event-driven e-commerce backend built with AWS Serverles
 - [Project Structure](#project-structure)
 - [Service Communication](#service-communication)
 - [How to Run](#how-to-run)
-- [Testing](#testing)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -25,9 +24,6 @@ A modern, scalable, and event-driven e-commerce backend built with AWS Serverles
 - **DynamoDB**: Each service manages its own data in DynamoDB tables.
 - **Shared Utilities**: Common logic (logging, error handling, response formatting, circuit breaker) is shared across services.
 
-<!-- Add your own diagram if available -->
-<!-- ![Architecture Diagram](docs/architecture.png) -->
-
 ---
 
 ## Technologies Used
@@ -39,7 +35,6 @@ A modern, scalable, and event-driven e-commerce backend built with AWS Serverles
 - **AWS CloudWatch**: Monitoring and logging
 - **Serverless Framework**: Infrastructure as code and deployment
 - **Node.js**: Runtime for all services
-- **Jest**: Unit and integration testing
 - **Terraform**: (Optional) Infrastructure provisioning
 
 ---
@@ -70,8 +65,6 @@ serverless-ecommerce/
 │       ├── error-handler.js
 │       ├── logger.js
 │       └── response.js
-├── tests/
-│   └── integration/
 ├── package.json
 └── README.md
 ```
@@ -134,26 +127,5 @@ npm install --save-dev serverless-offline
 serverless offline
 ```
 
----
-
-## Testing
-- Run all tests:
-	```sh
-	npm test
-	```
-- Or run tests for a specific service:
-	```sh
-	cd services/user-service
-	npm test
-	```
-
----
-
-## Contributing
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
-
----
-
 ## License
 This project is licensed under the MIT License.
-
