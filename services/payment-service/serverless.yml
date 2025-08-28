@@ -1,0 +1,52 @@
+service: payment-service
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: dev
+  profile: bertancildusunceler
+  environment:
+    PAYMENTS_TABLE: ${self:service}-${sls:stage}
+    EVENT_BUS_NAME: ecommerce-event-bus
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+      Resource: 
+        - Fn::GetAtt: [PaymentsTable, Arn]
+    - Effect: Allow
+      Action:
+        - events:PutEvents
+      Resource: arn:aws:events:${self:provider.region}:*:event-bus/${self:provider.environment.EVENT_BUS_NAME}
+
+functions:
+  processPayment:
+    handler: src/handlers/process-payment.processPaymentHandler
+    events:
+      - eventBridge:
+          eventBus: ecommerce-event-bus
+          pattern:
+            source:
+              - ecommerce.orders
+            detail-type:
+              - OrderCreated
+
+resources:
+  Resources:
+    PaymentsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.PAYMENTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+# EVENTBUS TANIMI YOK! SADECE MEVCUT EVENTBUS'U KULLANIYORUZ

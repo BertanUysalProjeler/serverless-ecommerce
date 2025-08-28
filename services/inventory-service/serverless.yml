@@ -1,0 +1,67 @@
+service: inventory-service
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: dev
+  profile: bertancildusunceler
+  environment:
+    INVENTORY_TABLE: ${self:service}-${sls:stage}
+    EVENT_BUS_NAME: ecommerce-event-bus
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:Query
+      Resource: 
+        - Fn::GetAtt: [InventoryTable, Arn]
+    - Effect: Allow
+      Action:
+        - events:PutEvents
+      Resource: arn:aws:events:${self:provider.region}:*:event-bus/${self:provider.environment.EVENT_BUS_NAME}
+
+functions:
+  updateInventory:
+    handler: src/handlers/update-inventory.updateInventoryHandler
+    events:
+      - eventBridge:
+          eventBus: ecommerce-event-bus
+          pattern:
+            source:
+              - ecommerce.orders
+            detail-type:
+              - OrderCreated
+
+  getInventory:
+    handler: src/handlers/get-inventory.getInventoryHandler
+    events:
+      - http:
+          path: inventory/{productId}
+          method: get
+          cors: true
+
+  createInventory:
+    handler: src/handlers/create-inventory.createInventoryHandler
+    events:
+      - http:
+          path: inventory
+          method: post
+          cors: true
+
+resources:
+  Resources:
+    InventoryTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.INVENTORY_TABLE}
+        AttributeDefinitions:
+          - AttributeName: productId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: productId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST

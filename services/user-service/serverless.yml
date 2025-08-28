@@ -1,0 +1,77 @@
+service: user-service
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: dev
+  profile: bertancildusunceler
+  environment:
+    USERS_TABLE: ${self:service}-${sls:stage}
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 
+        - Fn::GetAtt: [UsersTable, Arn]
+
+functions:
+  createUser:
+    handler: src/handlers/create-user.handler
+    events:
+      - http:
+          path: users
+          method: post
+          cors: true
+
+  getUser:
+    handler: src/handlers/get-user.handler
+    events:
+      - http:
+          path: users/{userId}
+          method: get
+          cors: true
+
+  updateUser:
+    handler: src/handlers/update-user.handler
+    events:
+      - http:
+          path: users/{userId}
+          method: put
+          cors: true
+
+  deleteUser:
+    handler: src/handlers/delete-user.handler
+    events:
+      - http:
+          path: users/{userId}
+          method: delete
+          cors: true
+
+  listUsers:
+    handler: src/handlers/list-users.handler
+    events:
+      - http:
+          path: users
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST

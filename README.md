@@ -1,2 +1,4 @@
-# serverless-ecommerce
-Serverless microservice e-commerce platform
+# Serverless E-Commerce Platform
+
+Modern, event-driven, microservices architecture built with AWS Serverless technologies.
+

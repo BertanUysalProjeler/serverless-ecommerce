@@ -1,0 +1,65 @@
+service: order-service
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: dev
+  profile: bertancildusunceler
+  environment:
+    ORDERS_TABLE: ${self:service}-${sls:stage}
+    EVENT_BUS_NAME: ecommerce-event-bus
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:Query
+      Resource: 
+        - Fn::GetAtt: [OrdersTable, Arn]
+    - Effect: Allow
+      Action:
+        - events:PutEvents
+      Resource: arn:aws:events:${self:provider.region}:*:event-bus/${self:provider.environment.EVENT_BUS_NAME}
+
+functions:
+  createOrder:
+    handler: src/handlers/create-order.createOrderHandler
+    events:
+      - http:
+          path: orders
+          method: post
+          cors: true
+
+  getOrder:
+    handler: src/handlers/get-order.getOrderHandler
+    events:
+      - http:
+          path: orders/{id}
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    OrdersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.ORDERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: userId-index
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL

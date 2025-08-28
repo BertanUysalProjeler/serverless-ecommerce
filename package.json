@@ -1,0 +1,21 @@
+{
+  "name": "serverless-ecommerce",
+  "version": "1.0.0",
+  "description": "Serverless microservice e-commerce platform",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install-all": "npm install && cd services/user-service && npm install"
+  },
+  "keywords": [
+    "serverless",
+    "microservices",
+    "aws",
+    "ecommerce"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "aws-sdk": "^2.1238.0",
+    "serverless-offline": "^14.4.0"
+  }
+}
